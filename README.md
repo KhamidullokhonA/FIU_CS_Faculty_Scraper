@@ -70,8 +70,9 @@ py -m venv .venv
 **3. Install dependencies.**
 
 ```bash
-python -m pip install -r requirements.txt
-```
+python  -m pip install -r requirements.txt
+py  -m pip install -r requirements.txt (Windows)
+``` 
 
 The `requirements.txt` file should contain:
 
@@ -87,6 +88,7 @@ From the project folder:
 
 ```bash
 python app.py
+py app.py (Windows)
 ```
 
 Open the local address displayed in the terminal (usually `http://127.0.0.1:5000/`).
