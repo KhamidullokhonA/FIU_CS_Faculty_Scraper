@@ -6,4 +6,7 @@ services:
     ports:
       - "127.0.0.1:5001:5000"
     restart: unless-stopped
+    command: >
+      sh -c "echo 'Open your app at http://localhost:5001'
+      && python -u app.py"
 
