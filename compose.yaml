@@ -1,0 +1,9 @@
+
+services:
+  fiu-scraper:
+    build: .
+    container_name: fiu-scraper
+    ports:
+      - "127.0.0.1:5001:5000"
+    restart: unless-stopped
+
