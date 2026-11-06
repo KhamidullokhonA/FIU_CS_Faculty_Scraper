@@ -21,6 +21,9 @@ project-folder/
 ├── app.py
 ├── scraper_fiu.py
 ├── requirements.txt
+├── Dockerfile
+├── compose.yaml
+├── .dockerignore
 └── templates/
     └── index.html
 ```
@@ -29,71 +32,111 @@ project-folder/
 - `scraper_fiu.py` — Python scraper for FIU's WordPress faculty records.
 - `templates/index.html` — HTML, CSS, and JavaScript for the interface, direct CSRankings retrieval, comparison, and CSV exports.
 - `requirements.txt` — Python dependencies.
+- `Dockerfile` — builds the Python application image.
+- `compose.yaml` — runs the application with Docker and publishes port 5001.
+- `.dockerignore` — excludes local virtual environments, Git history, and other unnecessary files.
 
 > If your downloaded files have names such as `app(4).py`, `scraper_fiu(2).py`, or `index(2).html`, rename them to match the structure above. Flask's `render_template("index.html")` expects the HTML file under `templates/`.
 
 ## Prerequisites
 
-- Python 3.9 or newer (recommended)
-- Internet access to retrieve records from FIU and GitHub
-- A modern web browser
+For the recommended Docker setup:
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running (or Docker Engine with Compose).
+- Git to clone the repository, or download the project ZIP instead.
+- Internet access to retrieve records from FIU and CSRankings GitHub.
+- A modern web browser.
 
-## Installation
+You **do not** need to install Python or create a virtual environment when using Docker.
 
-**1. Clone or download this project's repository.**
+## Installation and Running with Docker (Recommended)
 
-If using Git:
+### 1. Clone the repository
 
 ```bash
 git clone <YOUR_REPOSITORY_URL>
 cd <YOUR_REPOSITORY_FOLDER>
 ```
 
-Alternatively, download the project as a ZIP and open the extracted folder in your terminal. Replace the placeholders above with your repository's actual URL and folder name.
+Replace the placeholders with the repository's actual URL and folder name. Alternatively, download the repository ZIP, extract it, and open a terminal in the extracted folder.
 
-**2. (Recommended) Create and activate a virtual environment.**
+### 2. Build and start the app
 
-On macOS or Linux:
+Make sure Docker Desktop is running. From the folder containing `compose.yaml`, run:
+
+```bash
+docker compose up --build
+```
+
+This builds the Docker image (installing Python dependencies) and starts the Flask app. The terminal remains attached and displays container logs. Open:
+
+**http://localhost:5001**
+
+The site is available only while the app is running. Docker Compose does not automatically open a browser.
+
+### 3. Run in the background instead (optional)
+
+```bash
+docker compose up --build -d && echo "Open your app: http://localhost:5001"
+```
+
+The `-d` flag starts the app in the background, so live container logs are hidden. The `echo` command prints the browser link in your terminal once the Compose command succeeds. It does not guarantee Flask is fully ready yet.
+
+### 4. Subsequent starts
+
+Once the image has been built, you can normally start the existing app without rebuilding:
+
+```bash
+docker compose up -d && echo "Open your app: http://localhost:5001"
+```
+
+After changing application code, `requirements.txt`, or the Dockerfile, rebuild the image:
+
+```bash
+docker compose up --build -d && echo "Open your app: http://localhost:5001"
+```
+
+These commands work in macOS/Linux shells and Windows PowerShell.
+
+### 5. Stop, inspect, or troubleshoot
+
+```bash
+docker compose down
+```
+
+Stops and removes the Compose-managed containers. Other useful commands:
+
+| Action | Command |
+| --- | --- |
+| Show running services | `docker compose ps` |
+| View logs | `docker compose logs --tail=50` |
+| Follow live logs | `docker compose logs -f` |
+| Start in the foreground | `docker compose up` |
+| Stop foreground mode | Press `Ctrl+C` |
+
+If the page does not load, check `docker compose ps` and the logs. Verify that `compose.yaml` publishes `5001:5000` and Flask listens on `0.0.0.0:5000` inside the container.
+
+## Run Without Docker (Optional)
+
+If you prefer to run directly with Python, install Python 3.9+ and create a virtual environment.
+
+On macOS/Linux:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+python -m pip install -r requirements.txt
+python app.py
 ```
 
-On Windows (PowerShell):
+On Windows PowerShell:
 
 ```powershell
 py -m venv .venv
-.venv\Scripts\Activate.ps1
+& .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+& .\.venv\Scripts\python.exe app.py
 ```
 
-**3. Install dependencies.**
-
-```bash
-python  -m pip install -r requirements.txt
-py  -m pip install -r requirements.txt (Windows)
-``` 
-
-The `requirements.txt` file should contain:
-
-```text
-Flask
-requests
-pandas
-```
-
-## Run the Application
-
-From the project folder:
-
-```bash
-python app.py
-py app.py (Windows)
-```
-
-Open the local address displayed in the terminal (usually `http://127.0.0.1:5000/`).
-
-If port 5000 is already in use, free that port or change the Flask port in `app.py` (for example, `app.run(debug=True, port=5001)`) and open the corresponding address.
+Then open the local URL printed by Flask. The local Python port can differ from the Docker URL.
 
 ## How to Use
 
@@ -188,7 +231,7 @@ The example record is illustrative, not a real scraped result.
 - **Name-matching accuracy:** The comparison uses fuzzy matching, so false matches and missed matches are possible. Review results manually before changing CSRankings records.
 - **No publication metadata:** This app retrieves CSRankings author names and ORCIDs, not per-paper details or publication counts.
 - **CSV files download on demand:** The webpage exports CSVs in the browser; Flask does not automatically save these exports. Running `python scraper_fiu.py` directly also writes `faculty_members.csv` to the user's Desktop, as configured in that script.
-- **Development server:** `app.py` currently runs Flask with `debug=True`, which is suitable for local development, not a production deployment.
+- **Local development:** The Docker configuration described here is intended for local use, not a hardened public deployment.
 
 ## Data Attribution
 
